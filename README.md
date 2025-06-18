@@ -11,7 +11,8 @@ UI and Outputs :
 ![Screenshot 2025-06-18 103521](https://github.com/user-attachments/assets/a53a4f93-e853-4e92-a656-045709392d2f)
 
 3) Separate notes generation from transcript (using Stanford CS229 lecture)
-![WhatsApp Image 2025-06-18 at 10 04 18_b1c564d6](https://github.com/user-attachments/assets/7acbfd7a-8a57-4b44-bd4b-ec8a9e416938)
+![Screenshot 2025-06-18 145112](https://github.com/user-attachments/assets/7873454d-e219-4b4b-affd-052ec5743a2f)
+
 
 4) Finding Google article and video links based on a topic
 ![Screenshot 2025-06-18 100825](https://github.com/user-attachments/assets/c4ee9bcf-b683-416c-b930-d4703d8bb8fe)
