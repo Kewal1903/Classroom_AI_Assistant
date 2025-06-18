@@ -1,4 +1,4 @@
-An AI Powered classroom assistant that takes videos of lectures as inputs and simplifies learning by generating transcripts, summary notes, generating relevant images and google search results.
-Models: Whisper-Small (OpenVINO) • T5-Base Summarizer (OpenVINO) • Stable Diffusion v1.5
-Enhanced Pipeline: Video → Audio → Transcript → Summary → Contextual Analysis → Focused Images + Targeted Search
+An AI Powered classroom assistant that takes videos of lectures as inputs and simplifies learning by generating transcripts, summary notes, relevant images and google search results.
+Models: Whisper-Small (OpenVINO) • DistilBART Summarizer (OpenVINO) • Qwen 2.5 (OpenVINO)
+Enhanced Pipeline: Video → Audio → Transcript → Notes → Google Images, Articles and Video search results. Options to use chatbot and generate summary based on transcript.
 Built with Gradio
