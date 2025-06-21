@@ -18,7 +18,8 @@ UI and Outputs :
 
 
 3) Separate notes generation from transcript (using Stanford CS229 lecture)
-![Screenshot 2025-06-18 145112](https://github.com/user-attachments/assets/7873454d-e219-4b4b-affd-052ec5743a2f)
+![Screenshot 2025-06-21 174344](https://github.com/user-attachments/assets/cb269a1c-1af7-4f42-8201-b4f7ab2bfee4)
+
 
 
 
