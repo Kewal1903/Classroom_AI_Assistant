@@ -5,13 +5,14 @@ Built with Gradio
 
 UI and Outputs : 
 1) Area to input and watch the lecture video
-![Screenshot 2025-06-18 152318](https://github.com/user-attachments/assets/2b0624a4-f631-4ddc-9702-1430a67ea5f2)
+![Screenshot 2025-06-21 172855](https://github.com/user-attachments/assets/4ba2db07-abce-4535-b538-0028f9bfb200)
+
 
 
 2) Output of full lecture pipeline ( Video → Audio → Transcript → Notes → Google Images, Articles and Video search results)
-![Screenshot 2025-06-18 152330](https://github.com/user-attachments/assets/8f88f717-e68b-4cd8-8fdf-70793df90af1)
+![Screenshot 2025-06-21 173756](https://github.com/user-attachments/assets/90815a29-418c-4953-88fd-a523afe89a84)
 
-![Screenshot 2025-06-18 152351](https://github.com/user-attachments/assets/a21371e2-ac63-4f81-aecf-33975c18ceaf)
+![Screenshot 2025-06-21 173815](https://github.com/user-attachments/assets/2c769ede-9a0d-4be2-87c5-de47fe1fede7)
 
 
 
