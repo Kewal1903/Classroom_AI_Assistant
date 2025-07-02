@@ -7,6 +7,11 @@ UI and Outputs :
 1) Area to input and watch the lecture video
 ![Screenshot 2025-06-21 172855](https://github.com/user-attachments/assets/4ba2db07-abce-4535-b538-0028f9bfb200)
 
+OR
+
+![image](https://github.com/user-attachments/assets/776cd847-f081-40dd-97c1-7129c9bad74a)
+
+
 
 
 2) Output of full lecture pipeline ( Video → Audio → Transcript → Notes → Google Images, Articles and Video search results)
