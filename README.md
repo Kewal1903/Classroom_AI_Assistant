@@ -15,9 +15,10 @@ OR
 
 
 2) Output of full lecture pipeline ( Video → Audio → Transcript → Notes → Google Images, Articles and Video search results)
-![Screenshot 2025-06-21 173756](https://github.com/user-attachments/assets/90815a29-418c-4953-88fd-a523afe89a84)
+![image](https://github.com/user-attachments/assets/0efac8c2-b3de-4322-aa06-1e134e21f6a2)
 
-![Screenshot 2025-06-21 173815](https://github.com/user-attachments/assets/2c769ede-9a0d-4be2-87c5-de47fe1fede7)
+![image](https://github.com/user-attachments/assets/bd05e932-df2f-4e70-ac4f-335d2f3e58e2)
+
 
 
 
