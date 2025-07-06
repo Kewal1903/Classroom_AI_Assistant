@@ -44,7 +44,6 @@ os.makedirs(MODEL_CACHE, exist_ok=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"🔧 Using device: {device}")
 
-# Global model variables
 whisper_model = None
 whisper_processor = None
 notes_model = None
@@ -659,7 +658,6 @@ def detect_subject_area(transcript):
         score = sum(1 for keyword in keywords if keyword in text_lower)
         scores[subject] = score
 
-    # Return the subject with highest score, or 'general' if no clear match
     if max(scores.values()) > 2:
         return max(scores, key=scores.get)
     return 'general'
@@ -678,7 +676,6 @@ def split_transcript_intelligently(transcript, max_length):
         if not sentence:
             continue
 
-        # Check if adding this sentence would exceed the limit
         if len(current_chunk) + len(sentence) + 2 <= max_length:
             current_chunk = current_chunk + ". " + sentence if current_chunk else sentence
         else:
@@ -694,7 +691,6 @@ def split_transcript_intelligently(transcript, max_length):
 def generate_enhanced_chunk_notes(chunk, subject_area, is_first_chunk):
     """Generate enhanced notes for a single chunk with subject-specific prompting"""
 
-    # Subject-specific prompting
     subject_prompts = {
         'computer_science': "Focus on algorithms, data structures, programming concepts, and technical implementations.",
         'mathematics': "Emphasize formulas, theorems, proofs, and mathematical relationships.",
@@ -751,14 +747,14 @@ KEY CONCEPTS:
                 input_ids=inputs['input_ids'],
                 attention_mask=inputs['attention_mask'],
                 max_new_tokens=800,
-                min_new_tokens=50,  # Ensure minimum length
+                min_new_tokens=50,  
                 temperature=0.2,
                 do_sample=True,
                 top_p=0.8,
                 top_k=25,
                 pad_token_id=notes_tokenizer.pad_token_id,
                 eos_token_id=notes_tokenizer.eos_token_id,
-                early_stopping=False,  # Don't stop early
+                early_stopping=False, 
                 no_repeat_ngram_size=4,
                 repetition_penalty=1.15,
                 length_penalty=1.2
@@ -766,13 +762,11 @@ KEY CONCEPTS:
 
         response = notes_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Extract the assistant's response
         if "<|im_start|>assistant" in response:
             notes = response.split("<|im_start|>assistant")[-1].strip()
         else:
             notes = response[len(prompt):].strip()
 
-        # Clean and enhance the notes with sentence completion
         notes = clean_and_enhance_notes_with_completion(notes)
 
         del inputs, outputs
@@ -785,11 +779,9 @@ KEY CONCEPTS:
 def clean_and_enhance_notes_with_completion(notes):
     """Clean and enhance generated notes with better formatting and sentence completion"""
     try:
-        # Remove special tokens and artifacts
         notes = re.sub(r'<\|im_start\|>.*?<\|im_end\|>', '', notes, flags=re.DOTALL)
         notes = re.sub(r'<\|.*?\|>', '', notes)
 
-        # Split into lines and process
         lines = notes.split('\n')
         cleaned_lines = []
         current_section = ""
@@ -799,24 +791,18 @@ def clean_and_enhance_notes_with_completion(notes):
             if not line or len(line) < 3:
                 continue
 
-            # Identify section headers
             if any(header in line.upper() for header in ['KEY CONCEPTS', 'DETAILED EXPLANATIONS', 'IMPORTANT TERMS', 'EXAMPLES', 'SUMMARY']):
                 current_section = line.upper()
                 cleaned_lines.append(f"\n{current_section}:")
                 continue
 
-            # Clean and format content lines
             if line.startswith(('- ', '• ', '* ')):
                 line = line[2:].strip()
 
-            # Fix incomplete sentences at the beginning
             if line and not line[0].isupper() and not line[0].isdigit():
-                # Skip lines that start with lowercase (likely cut-off)
                 continue
 
-            # Fix incomplete sentences at the end
             if line.endswith(('and', 'the', 'of', 'in', 'to', 'for', 'with', 'by', 'from', 'that', 'which', 'this', 'these', 'those')):
-                # Try to complete the sentence or skip if too incomplete
                 if len(line.split()) < 5:
                     continue
                 else:
@@ -824,27 +810,21 @@ def clean_and_enhance_notes_with_completion(notes):
                     if line and not line.endswith(('.', '!', '?')):
                         line += '.'
 
-            # Ensure proper capitalization
             if line and line[0].islower():
                 line = line[0].upper() + line[1:]
 
-            # Ensure proper sentence ending
             if line and not line.endswith(('.', '!', '?', ':')):
                 line += '.'
 
-            # Add bullet point formatting
             if current_section and not line.startswith(('1.', '2.', '3.', '4.', '5.')):
                 line = f"• {line}"
 
-            # Remove duplicates and very short lines
             if line not in cleaned_lines and len(line) > 15:
                 cleaned_lines.append(line)
 
-        # Final pass to ensure sentence completion
         final_lines = []
         for line in cleaned_lines:
             if line.strip():
-                # Check if line ends abruptly
                 if line.endswith(',') or (line.count(' ') > 3 and not line.endswith(('.', '!', '?', ':'))):
                     line = line.rstrip(',') + '.'
                 final_lines.append(line)
@@ -921,24 +901,20 @@ def generate_structured_notes(transcript):
     if not transcript or len(transcript.strip()) < 100:
         return "❌ Transcript too short to generate meaningful notes."
 
-    # Load model if not already loaded
     if notes_model is None or notes_tokenizer is None:
         load_notes_model()
         if notes_model is None or notes_tokenizer is None:
             return "❌ Failed to load notes generation model."
 
     try:
-        # Analyze transcript to determine subject area
         subject_area = detect_subject_area(transcript)
 
-        # Split transcript intelligently
         max_chunk_length = 1500
         chunks = split_transcript_intelligently(transcript, max_chunk_length)
 
         all_notes_sections = []
 
-        # Process each chunk with subject-specific prompting
-        for i, chunk in enumerate(chunks[:4]):  # Process up to 4 chunks
+        for i, chunk in enumerate(chunks[:4]):  
             try:
                 chunk_notes = generate_enhanced_chunk_notes(chunk, subject_area, i == 0)
                 if chunk_notes and len(chunk_notes.strip()) > 50:
@@ -949,7 +925,6 @@ def generate_structured_notes(transcript):
                 continue
 
         if all_notes_sections:
-            # Merge and structure all notes
             merged_notes = merge_and_structure_notes(all_notes_sections, subject_area)
             final_notes = format_enhanced_notes(merged_notes, subject_area)
             return final_notes
@@ -977,7 +952,6 @@ def merge_and_structure_notes(notes_sections, subject_area):
             if key in merged:
                 merged[key].extend(items)
 
-    # Remove duplicates and limit items
     for key in merged:
         merged[key] = remove_duplicates_enhanced(merged[key])[:12]
 
@@ -1003,7 +977,6 @@ def parse_enhanced_sections(notes):
 
         line_upper = line.upper()
 
-        # Identify section headers
         if 'KEY CONCEPTS' in line_upper:
             current_section = 'key_concepts'
         elif 'DETAILED EXPLANATIONS' in line_upper or 'EXPLANATIONS' in line_upper:
@@ -1015,7 +988,6 @@ def parse_enhanced_sections(notes):
         elif 'SUMMARY' in line_upper:
             current_section = 'summary'
         else:
-            # Add content to current section
             if line.startswith('•'):
                 line = line[1:].strip()
             elif line.startswith(('-', '*')):
@@ -1032,10 +1004,8 @@ def remove_duplicates_enhanced(items):
     result = []
 
     for item in items:
-        # Create a key for comparison (first 60 characters, lowercased)
         item_key = item.lower().strip()[:60]
 
-        # Skip if too similar to existing items
         is_duplicate = False
         for seen_key in seen:
             if len(set(item_key.split()) & set(seen_key.split())) > len(item_key.split()) * 0.7:
@@ -1052,13 +1022,11 @@ def format_enhanced_notes(merged_notes, subject_area):
     """Format merged notes with enhanced structure and subject-specific formatting"""
     output = []
 
-    # Header with subject area
     subject_display = subject_area.replace('_', ' ').title()
     output.append(f"COMPREHENSIVE LECTURE NOTES - {subject_display}")
     output.append("=" * 60)
     output.append("")
 
-    # Key Concepts Section
     if merged_notes['key_concepts']:
         output.append("🔑 KEY CONCEPTS:")
         output.append("-" * 40)
@@ -1066,7 +1034,6 @@ def format_enhanced_notes(merged_notes, subject_area):
             output.append(f"{i}. {concept}")
         output.append("")
 
-    # Detailed Explanations Section
     if merged_notes['detailed_explanations']:
         output.append("📚 DETAILED EXPLANATIONS:")
         output.append("-" * 40)
@@ -1074,7 +1041,6 @@ def format_enhanced_notes(merged_notes, subject_area):
             output.append(f"{i}. {explanation}")
         output.append("")
 
-    # Important Terms Section
     if merged_notes['important_terms']:
         output.append("📖 IMPORTANT TERMS & DEFINITIONS:")
         output.append("-" * 40)
@@ -1082,7 +1048,6 @@ def format_enhanced_notes(merged_notes, subject_area):
             output.append(f"{i}. {term}")
         output.append("")
 
-    # Examples Section
     if merged_notes['examples']:
         output.append("💡 EXAMPLES & APPLICATIONS:")
         output.append("-" * 40)
@@ -1090,7 +1055,6 @@ def format_enhanced_notes(merged_notes, subject_area):
             output.append(f"{i}. {example}")
         output.append("")
 
-    # Summary Section
     if merged_notes['summary']:
         output.append("📝 SUMMARY:")
         output.append("-" * 40)
@@ -1098,7 +1062,6 @@ def format_enhanced_notes(merged_notes, subject_area):
             output.append(f"{i}. {summary_point}")
         output.append("")
 
-    # Study Tips Section
     output.append("💡 STUDY TIPS:")
     output.append("-" * 40)
     study_tips = generate_subject_specific_study_tips(subject_area)
@@ -1332,7 +1295,6 @@ custom_css = """
     --border-color-dark: #404040;
 }
 
-/* Light mode styles */
 .gradio-container {
     background-color: var(--bg-color-light);
     color: var(--text-color-light);
@@ -1341,13 +1303,11 @@ custom_css = """
     line-height: 1.5;
 }
 
-/* Dark mode styles */
 .dark .gradio-container {
     background-color: var(--bg-color-dark) !important;
     color: var(--text-color-dark) !important;
 }
 
-/* Input fields */
 .gr-textbox, .gr-textbox textarea, .gr-textbox input,
 textarea, input[type="text"] {
     background-color: var(--bg-color-light);
@@ -1379,7 +1339,6 @@ textarea:focus, input[type="text"]:focus {
     box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1) !important;
 }
 
-/* File upload areas */
 .gr-file, .gr-video, .gr-image {
     background-color: var(--bg-color-light);
     border: 1px solid var(--border-color-light);
@@ -1393,7 +1352,6 @@ textarea:focus, input[type="text"]:focus {
     color: var(--text-color-dark) !important;
 }
 
-/* Labels */
 .gr-label, label {
     color: var(--text-color-light);
     font-weight: 500;
@@ -1406,7 +1364,6 @@ textarea:focus, input[type="text"]:focus {
     color: var(--text-color-dark) !important;
 }
 
-/* Cards and panels */
 .gr-panel, .gr-box, .gr-form {
     background-color: var(--bg-color-light);
     border: 1px solid var(--border-color-light);
@@ -1421,7 +1378,6 @@ textarea:focus, input[type="text"]:focus {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Buttons */
 .gr-button {
     background: var(--primary-color-light);
     color: white;
@@ -1449,7 +1405,6 @@ textarea:focus, input[type="text"]:focus {
     background: #0b5ed7;
 }
 
-/* Tab navigation */
 .tab-nav button {
     background: var(--primary-color-light);
     color: white;
@@ -1475,7 +1430,6 @@ textarea:focus, input[type="text"]:focus {
     background: #0b5ed7;
 }
 
-/* Main header */
 .main-header {
     text-align: center;
     font-size: 2.2em;
@@ -1500,7 +1454,6 @@ h1#main-title {
     color: var(--primary-color-dark) !important;
 }
 
-/* Video section - full width */
 .video-section {
     width: 100% !important;
     max-width: none !important;
@@ -1511,7 +1464,6 @@ h1#main-title {
     min-height: 400px;
 }
 
-/* Results grid */
 .results-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1533,7 +1485,6 @@ h1#main-title {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Markdown content */
 .gr-markdown {
     color: var(--text-color-light);
     font-family: 'Inter', sans-serif;
@@ -1548,7 +1499,6 @@ h1#main-title {
     color: var(--text-color-dark) !important;
 }
 
-/* Image containers */
 .image-container {
     display: flex;
     gap: 12px;
@@ -1561,7 +1511,6 @@ h1#main-title {
     max-width: 300px;
 }
 
-/* Sliders */
 .gr-slider {
     color: var(--text-color-light);
     font-family: 'Inter', sans-serif;
@@ -1571,7 +1520,6 @@ h1#main-title {
     color: var(--text-color-dark) !important;
 }
 
-/* Accordion */
 .gr-accordion {
     background: var(--bg-color-light);
     border: 1px solid var(--border-color-light);
@@ -1584,7 +1532,6 @@ h1#main-title {
     border-color: var(--border-color-dark) !important;
 }
 
-/* Cleanup styles */
 .reduced-text {
     font-size: 14px;
     line-height: 1.5;
@@ -1615,7 +1562,6 @@ h1#main-title {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Chat message styling */
 .message {
     background: var(--bg-color-light);
     color: var(--text-color-light);
@@ -1630,7 +1576,6 @@ h1#main-title {
     color: var(--text-color-dark) !important;
 }
 
-/* User message */
 .message.user {
     background: var(--primary-color-light);
     color: white;
@@ -1640,7 +1585,6 @@ h1#main-title {
     background: var(--primary-color-dark) !important;
 }
 
-/* Bot message */
 .message.bot {
     background: #f8f9fa;
     color: var(--text-color-light);
@@ -1651,7 +1595,6 @@ h1#main-title {
     color: var(--text-color-dark) !important;
 }
 
-/* Chat input area */
 .chat-input-area {
     background: var(--bg-color-light);
     border-top: 1px solid var(--border-color-light);
@@ -1663,7 +1606,6 @@ h1#main-title {
     border-color: var(--border-color-dark) !important;
 }
 
-/* Study tips panel */
 .study-tips {
     background: rgba(0, 123, 255, 0.04);
     border: 1px solid rgba(0, 123, 255, 0.15);
@@ -1678,7 +1620,6 @@ h1#main-title {
     border-color: rgba(13, 110, 253, 0.25) !important;
 }
 
-/* Enhanced spacing and typography */
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -1692,7 +1633,6 @@ p {
     margin-bottom: 1em;
 }
 
-/* Subtle animations */
 .gr-button, .tab-nav button {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1722,7 +1662,6 @@ p {
     border-color: #ff000040 !important;
 }
 
-/* Input option sections */
 .input-option-section {
     background: rgba(0, 123, 255, 0.02);
     border: 1px solid rgba(0, 123, 255, 0.1);
@@ -1736,7 +1675,6 @@ p {
     border-color: rgba(13, 110, 253, 0.15) !important;
 }
 
-/* Section headers */
 .section-header {
     color: var(--primary-color-light);
     font-weight: 600;
@@ -1749,7 +1687,6 @@ p {
     color: var(--primary-color-dark) !important;
 }
 
-/* URL validation indicators */
 .url-valid {
     border-color: #28a745 !important;
     box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1) !important;
@@ -1760,7 +1697,6 @@ p {
     box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1) !important;
 }
 
-/* Enhanced video section */
 .video-upload-section {
     border: 2px dashed var(--border-color-light);
     border-radius: 8px;
@@ -1785,7 +1721,6 @@ p {
     background: rgba(13, 110, 253, 0.06) !important;
 }
 
-/* Processing status indicators */
 .processing-status {
     background: rgba(0, 123, 255, 0.1);
     border: 1px solid rgba(0, 123, 255, 0.2);
@@ -1803,7 +1738,6 @@ p {
     color: var(--primary-color-dark) !important;
 }
 
-/* Success/Error message styling */
 .status-success {
     background: rgba(40, 167, 69, 0.1);
     border-color: rgba(40, 167, 69, 0.2);
@@ -1828,7 +1762,6 @@ p {
     color: #dc3545 !important;
 }
 
-/* Enhanced tip section */
 .tip-section {
     background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
     border: 1px solid rgba(255, 193, 7, 0.2);
@@ -1844,7 +1777,6 @@ p {
     border-color: rgba(255, 193, 7, 0.3) !important;
 }
 
-/* Input group styling */
 .input-group {
     display: flex;
     flex-direction: column;
@@ -1863,7 +1795,6 @@ p {
     color: var(--text-color-dark) !important;
 }
 
-/* Progress bar enhancements */
 .progress-container {
     background: rgba(0, 123, 255, 0.05);
     border-radius: 4px;
@@ -1875,7 +1806,6 @@ p {
     background: rgba(13, 110, 253, 0.08) !important;
 }
 
-/* Enhanced button hover effects */
 .gr-button:not(:disabled):hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
@@ -1885,7 +1815,6 @@ p {
     box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3) !important;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .input-group {
         gap: 8px;
