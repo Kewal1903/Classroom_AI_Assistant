@@ -1,3 +1,9 @@
+Demo Video : https://1drv.ms/v/c/6b3ff936dfd6abe2/EYfBjzd3YARJjAf7bvfMXJkB9sul-HfZc52DEhxlqPX2cQ?e=2nUCC1
+
+Project report added in repo
+
+Brief project introduction : 
+
 An AI Powered classroom assistant that takes videos of lectures as inputs and simplifies learning by generating transcripts, summary notes, relevant images and google search results.
 Models: Whisper-Small (OpenVINO) • DistilBART Summarizer (OpenVINO) • Qwen 2.5 (OpenVINO)
 Enhanced Pipeline: Video → Audio → Transcript → Notes → Google Images, Articles and Video search results. Options to use chatbot.
