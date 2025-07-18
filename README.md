@@ -1,3 +1,5 @@
+Please note that the alternate pipeline is not for evaluation, it is just another version of the project that we were working on parallelly.
+
 Demo Video : https://1drv.ms/v/c/6b3ff936dfd6abe2/EYfBjzd3YARJjAf7bvfMXJkB9sul-HfZc52DEhxlqPX2cQ?e=2nUCC1
 
 Project report added in repo
