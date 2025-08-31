@@ -42,7 +42,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(MODEL_CACHE, exist_ok=True)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"🔧 Using device: {device}")
+print(f"Using device: {device}")
 
 whisper_model = None
 whisper_processor = None
@@ -55,11 +55,11 @@ def load_whisper_model():
     """Load Whisper model with OpenVINO optimization"""
     global whisper_model, whisper_processor
     if whisper_model is None:
-        print("🔄 Loading Whisper Small model...")
+        print("Loading Whisper Small model...")
         whisper_model_path = os.path.join(MODEL_CACHE, "whisper-small-ov")
 
         if not os.path.exists(whisper_model_path):
-            print("🔄 Converting Whisper to OpenVINO...")
+            print("Converting Whisper to OpenVINO...")
             whisper_model = OVModelForSpeechSeq2Seq.from_pretrained(
                 "openai/whisper-small",
                 export=True
@@ -69,18 +69,18 @@ def load_whisper_model():
             whisper_model = OVModelForSpeechSeq2Seq.from_pretrained(whisper_model_path)
 
         whisper_processor = AutoProcessor.from_pretrained("openai/whisper-small")
-        print("✅ Whisper model loaded!")
+        print("Whisper model loaded!")
 
 def load_notes_model():
     """Load enhanced notes generation model with OpenVINO optimization"""
     global notes_model, notes_tokenizer
     if notes_model is None:
-        print("🔄 Loading Qwen2.5-0.5B for enhanced notes generation...")
+        print("Loading Qwen2.5-0.5B for enhanced notes generation...")
         notes_model_path = os.path.join(MODEL_CACHE, "qwen2.5-0.5b-notes-ov")
 
         try:
             if not os.path.exists(notes_model_path):
-                print("🔄 Converting Qwen2.5-0.5B to OpenVINO...")
+                print("Converting Qwen2.5-0.5B to OpenVINO...")
                 notes_model = OVModelForCausalLM.from_pretrained(
                     "Qwen/Qwen2.5-0.5B-Instruct",
                     export=True,
@@ -100,9 +100,9 @@ def load_notes_model():
             if notes_tokenizer.pad_token is None:
                 notes_tokenizer.pad_token = notes_tokenizer.eos_token
 
-            print("✅ Enhanced Qwen2.5-0.5B model loaded successfully!")
+            print("Enhanced Qwen2.5-0.5B model loaded successfully!")
         except Exception as e:
-            print(f"⚠️ Qwen2.5 model loading failed: {e}")
+            print(f"Qwen2.5 model loading failed: {e}")
             notes_model = None
             notes_tokenizer = None
 
@@ -132,11 +132,11 @@ def load_chatbot_model():
     """Load a lightweight chatbot model for Q&A"""
     global chatbot_model, chatbot_tokenizer
     if chatbot_model is None:
-        print("🔄 Loading chatbot model...")
+        print("Loading chatbot model...")
         chatbot_model_path = os.path.join(MODEL_CACHE, "chatbot-model-ov")
         try:
             if not os.path.exists(chatbot_model_path):
-                print("🔄 Converting chatbot model to OpenVINO...")
+                print("Converting chatbot model to OpenVINO...")
                 chatbot_model = OVModelForCausalLM.from_pretrained(
                     "Qwen/Qwen2.5-0.5B-Instruct",
                     export=True,
@@ -154,9 +154,9 @@ def load_chatbot_model():
             if chatbot_tokenizer.pad_token is None:
                 chatbot_tokenizer.pad_token = chatbot_tokenizer.eos_token
 
-            print("✅ Chatbot model loaded successfully!")
+            print("Chatbot model loaded successfully!")
         except Exception as e:
-            print(f"⚠️ Chatbot model loading failed: {e}")
+            print(f"Chatbot model loading failed: {e}")
             chatbot_model = None
             chatbot_tokenizer = None
 
@@ -345,7 +345,7 @@ def download_youtube_video(url, progress_callback=None, max_retries=3):
     """
     try:
         if not is_youtube_url(url):
-            return None, "❌ Invalid YouTube URL provided"
+            return None, "Invalid YouTube URL provided"
         temp_dir = tempfile.mkdtemp()
 
         ydl_opts = {
@@ -374,38 +374,38 @@ def download_youtube_video(url, progress_callback=None, max_retries=3):
                         if '_percent_str' in d:
                             percent_str = d['_percent_str'].replace('%', '')
                             percent = float(percent_str)
-                            progress_callback(percent / 100, f"📥 Downloading: {percent:.1f}%")
+                            progress_callback(percent / 100, f"Downloading: {percent:.1f}%")
                         else:
-                            progress_callback(0.5, "📥 Downloading YouTube video...")
+                            progress_callback(0.5, "Downloading YouTube video...")
                     elif d['status'] == 'finished':
-                        progress_callback(1.0, "✅ Download complete!")
+                        progress_callback(1.0, "Download complete!")
                 except:
-                    progress_callback(0.5, "📥 Downloading...")
+                    progress_callback(0.5, "Downloading...")
 
             ydl_opts['progress_hooks'] = [progress_hook]
 
         for attempt in range(max_retries):
             try:
                 if progress_callback:
-                    progress_callback(0.05, f"🔄 Attempt {attempt + 1}/{max_retries}...")
+                    progress_callback(0.05, f"Attempt {attempt + 1}/{max_retries}...")
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
 
                     if progress_callback:
-                        progress_callback(0.1, "🔍 Extracting video info...")
+                        progress_callback(0.1, "Extracting video info...")
 
                     info = ydl.extract_info(url, download=False)
                     if not info:
-                        return None, "❌ Could not extract video information"
+                        return None, "Could not extract video information"
 
                     video_title = info.get('title', 'Unknown')[:50]
                     duration = info.get('duration', 0)
 
                     if duration and duration > 7200:
-                        return None, f"❌ Video too long ({duration//60} minutes). Please use videos under 2 hours."
+                        return None, f"Video too long ({duration//60} minutes). Please use videos under 2 hours."
 
                     if progress_callback:
-                        progress_callback(0.15, f"📺 Found: {video_title}...")
+                        progress_callback(0.15, f"Found: {video_title}...")
 
                     ydl.download([url])
 
@@ -416,7 +416,7 @@ def download_youtube_video(url, progress_callback=None, max_retries=3):
                         video_path = os.path.join(temp_dir, downloaded_files[0])
 
                         if os.path.exists(video_path) and os.path.getsize(video_path) > 0:
-                            return video_path, f"✅ Downloaded: {video_title}"
+                            return video_path, f"Downloaded: {video_title}"
                         else:
                             raise Exception("Downloaded file is empty or corrupted")
                     else:
@@ -431,7 +431,7 @@ def download_youtube_video(url, progress_callback=None, max_retries=3):
                         time.sleep(5)
                         continue
                     else:
-                        return None, "❌ YouTube rate limit exceeded. Please try again later."
+                        return None, "YouTube rate limit exceeded. Please try again later."
                 elif "timeout" in error_msg.lower():
                     if attempt < max_retries - 1:
                         if progress_callback:
@@ -439,29 +439,29 @@ def download_youtube_video(url, progress_callback=None, max_retries=3):
                         time.sleep(2)
                         continue
                     else:
-                        return None, "❌ Connection timeout. Please check your internet connection and try again."
+                        return None, "Connection timeout. Please check your internet connection and try again."
                 else:
                     if attempt < max_retries - 1:
                         if progress_callback:
-                            progress_callback(0.3, f"⏳ Download error, retrying {attempt + 2}...")
+                            progress_callback(0.3, f"Download error, retrying {attempt + 2}...")
                         time.sleep(2)
                         continue
                     else:
-                        return None, f"❌ Download failed after {max_retries} attempts: {error_msg}"
+                        return None, f"Download failed after {max_retries} attempts: {error_msg}"
 
             except Exception as e:
                 if attempt < max_retries - 1:
                     if progress_callback:
-                        progress_callback(0.3, f"⏳ Error occurred, retrying {attempt + 2}...")
+                        progress_callback(0.3, f"Error occurred, retrying {attempt + 2}...")
                     time.sleep(2)
                     continue
                 else:
-                    return None, f"❌ Download failed after {max_retries} attempts: {str(e)}"
+                    return None, f"Download failed after {max_retries} attempts: {str(e)}"
 
-        return None, f"❌ Download failed after {max_retries} attempts"
+        return None, f"Download failed after {max_retries} attempts"
 
     except Exception as e:
-        return None, f"❌ YouTube download error: {str(e)}"
+        return None, f"YouTube download error: {str(e)}"
 
 def download_youtube_audio_only(url, progress_callback=None):
     """
@@ -469,7 +469,7 @@ def download_youtube_audio_only(url, progress_callback=None):
     """
     try:
         if not is_youtube_url(url):
-            return None, "❌ Invalid YouTube URL provided"
+            return None, "Invalid YouTube URL provided"
 
         temp_dir = tempfile.mkdtemp()
 
@@ -508,28 +508,28 @@ def download_youtube_audio_only(url, progress_callback=None):
                         else:
                             progress_callback(0.5, "🎵 Downloading audio...")
                     elif d['status'] == 'finished':
-                        progress_callback(1.0, "✅ Audio download complete!")
+                        progress_callback(1.0, "Audio download complete!")
                 except:
-                    progress_callback(0.5, "🎵 Downloading...")
+                    progress_callback(0.5, "Downloading...")
 
             ydl_opts['progress_hooks'] = [progress_hook]
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             if progress_callback:
-                progress_callback(0.1, "🔍 Extracting video info...")
+                progress_callback(0.1, "Extracting video info...")
 
             info = ydl.extract_info(url, download=False)
             if not info:
-                return None, "❌ Could not extract video information"
+                return None, "Could not extract video information"
 
             video_title = info.get('title', 'Unknown')[:50]
             duration = info.get('duration', 0)
 
             if duration and duration > 7200:
-                return None, f"❌ Video too long ({duration//60} minutes). Please use videos under 2 hours."
+                return None, f"Video too long ({duration//60} minutes). Please use videos under 2 hours."
 
             if progress_callback:
-                progress_callback(0.15, f"🎵 Downloading audio for: {video_title}...")
+                progress_callback(0.15, f"Downloading audio for: {video_title}...")
 
             ydl.download([url])
 
@@ -539,18 +539,18 @@ def download_youtube_audio_only(url, progress_callback=None):
             if downloaded_files:
                 audio_path = os.path.join(temp_dir, downloaded_files[0])
                 if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
-                    return audio_path, f"✅ Downloaded audio: {video_title}"
+                    return audio_path, f"Downloaded audio: {video_title}"
                 else:
-                    return None, "❌ Downloaded file is empty"
+                    return None, "Downloaded file is empty"
             else:
-                return None, "❌ No audio file found after download"
+                return None, "No audio file found after download"
 
     except Exception as e:
-        return None, f"❌ Audio download error: {str(e)}"
+        return None, f"Audio download error: {str(e)}"
 
 def transcribe_audio_from_video(video_file, progress=gr.Progress()):
     if not video_file:
-        return "❌ No video uploaded."
+        return "No video uploaded."
 
     load_whisper_model()
 
@@ -559,7 +559,7 @@ def transcribe_audio_from_video(video_file, progress=gr.Progress()):
         video = VideoFileClip(video_file)
         if not video.audio:
             video.close()
-            return "❌ No audio found in video."
+            return "No audio found in video."
 
         audio_path = os.path.join(UPLOAD_FOLDER, "audio.wav")
         video.audio.write_audiofile(audio_path, logger=None)
@@ -611,7 +611,7 @@ def transcribe_audio_from_video(video_file, progress=gr.Progress()):
                     del inputs, generated_ids
 
                 except Exception as e:
-                    print(f"❌ Chunk processing failed: {e}")
+                    print(f"Chunk processing failed: {e}")
                     continue
 
             del batch_waveform
@@ -629,14 +629,14 @@ def transcribe_audio_from_video(video_file, progress=gr.Progress()):
         progress(1.0, desc="Transcription complete!")
 
         if not transcripts:
-            return "❌ No speech detected in video. Try a video with clearer audio."
+            return "No speech detected in video. Try a video with clearer audio."
 
         final_transcript = " ".join(transcripts)
-        return final_transcript if final_transcript.strip() else "❌ No clear speech detected."
+        return final_transcript if final_transcript.strip() else "No clear speech detected."
 
     except Exception as e:
         cleanup_memory()
-        return f"❌ Error processing video: {str(e)}"
+        return f"Error processing video: {str(e)}"
 
 def detect_subject_area(transcript):
     """Detect the subject area of the transcript"""
@@ -773,7 +773,7 @@ KEY CONCEPTS:
         return notes if notes and len(notes.strip()) > 50 else ""
 
     except Exception as e:
-        print(f"❌ Enhanced chunk generation error: {str(e)}")
+        print(f"Enhanced chunk generation error: {str(e)}")
         return ""
 
 def clean_and_enhance_notes_with_completion(notes):
@@ -899,12 +899,12 @@ def generate_subject_specific_study_tips(subject_area):
 def generate_structured_notes(transcript):
     """Generate enhanced structured notes using improved Qwen2.5-0.5B model"""
     if not transcript or len(transcript.strip()) < 100:
-        return "❌ Transcript too short to generate meaningful notes."
+        return "Transcript too short to generate meaningful notes."
 
     if notes_model is None or notes_tokenizer is None:
         load_notes_model()
         if notes_model is None or notes_tokenizer is None:
-            return "❌ Failed to load notes generation model."
+            return "Failed to load notes generation model."
 
     try:
         subject_area = detect_subject_area(transcript)
@@ -921,7 +921,7 @@ def generate_structured_notes(transcript):
                     all_notes_sections.append(chunk_notes)
                 cleanup_memory()
             except Exception as e:
-                print(f"⚠️ Error processing chunk {i}: {e}")
+                print(f"Error processing chunk {i}: {e}")
                 continue
 
         if all_notes_sections:
@@ -929,12 +929,12 @@ def generate_structured_notes(transcript):
             final_notes = format_enhanced_notes(merged_notes, subject_area)
             return final_notes
         else:
-            return "❌ Failed to generate notes from the provided transcript."
+            return "Failed to generate notes from the provided transcript."
 
     except Exception as e:
-        print(f"❌ Enhanced notes generation error: {str(e)}")
+        print(f"Enhanced notes generation error: {str(e)}")
         cleanup_memory()
-        return f"❌ Error generating notes: {str(e)}"
+        return f"Error generating notes: {str(e)}"
 
 def merge_and_structure_notes(notes_sections, subject_area):
     """Merge multiple note sections into a structured format"""
@@ -1028,41 +1028,41 @@ def format_enhanced_notes(merged_notes, subject_area):
     output.append("")
 
     if merged_notes['key_concepts']:
-        output.append("🔑 KEY CONCEPTS:")
+        output.append("KEY CONCEPTS:")
         output.append("-" * 40)
         for i, concept in enumerate(merged_notes['key_concepts'], 1):
             output.append(f"{i}. {concept}")
         output.append("")
 
     if merged_notes['detailed_explanations']:
-        output.append("📚 DETAILED EXPLANATIONS:")
+        output.append("DETAILED EXPLANATIONS:")
         output.append("-" * 40)
         for i, explanation in enumerate(merged_notes['detailed_explanations'], 1):
             output.append(f"{i}. {explanation}")
         output.append("")
 
     if merged_notes['important_terms']:
-        output.append("📖 IMPORTANT TERMS & DEFINITIONS:")
+        output.append("IMPORTANT TERMS & DEFINITIONS:")
         output.append("-" * 40)
         for i, term in enumerate(merged_notes['important_terms'], 1):
             output.append(f"{i}. {term}")
         output.append("")
 
     if merged_notes['examples']:
-        output.append("💡 EXAMPLES & APPLICATIONS:")
+        output.append("EXAMPLES & APPLICATIONS:")
         output.append("-" * 40)
         for i, example in enumerate(merged_notes['examples'], 1):
             output.append(f"{i}. {example}")
         output.append("")
 
     if merged_notes['summary']:
-        output.append("📝 SUMMARY:")
+        output.append("SUMMARY:")
         output.append("-" * 40)
         for i, summary_point in enumerate(merged_notes['summary'], 1):
             output.append(f"{i}. {summary_point}")
         output.append("")
 
-    output.append("💡 STUDY TIPS:")
+    output.append("STUDY TIPS:")
     output.append("-" * 40)
     study_tips = generate_subject_specific_study_tips(subject_area)
     for i, tip in enumerate(study_tips, 1):
@@ -1106,12 +1106,12 @@ def download_image_from_url(url):
             return image.convert('RGB')
         return None
     except Exception as e:
-        print(f"❌ Image download failed: {e}")
+        print(f"Image download failed: {e}")
         return None
 
 def search_web_enhanced(query, num_results=8, include_videos=True):
     if not query.strip():
-        return "❌ No search query provided."
+        return "No search query provided."
     try:
         search_params = {
             "q": query,
@@ -1122,13 +1122,13 @@ def search_web_enhanced(query, num_results=8, include_videos=True):
         results = search.get_dict()
 
         if "error" in results:
-            return f"❌ Search API error: {results['error']}"
+            return f"Search API error: {results['error']}"
 
         organic_results = results.get("organic_results", [])
         formatted_results = []
 
         if organic_results:
-            formatted_results.append("🔍 **WEB RESULTS:**\n")
+            formatted_results.append("**WEB RESULTS:**\n")
             for i, result in enumerate(organic_results[:num_results], 1):
                 title = result.get("title", "No title")
                 link = result.get("link", "")
@@ -1163,7 +1163,7 @@ def search_web_enhanced(query, num_results=8, include_videos=True):
 
         return "\n".join(formatted_results) if formatted_results else "❌ No results found."
     except Exception as e:
-        return f"❌ Search error: {str(e)}"
+        return f"Search error: {str(e)}"
 
 def extract_keywords_and_concepts(text, max_keywords=8):
     import re
@@ -1203,9 +1203,9 @@ def process_youtube_or_upload_robust(video_file, youtube_url, num_search_results
     try:
         if youtube_url and youtube_url.strip():
             if not is_youtube_url(youtube_url.strip()):
-                return "❌ Invalid YouTube URL format.", "", None, None, ""
+                return "Invalid YouTube URL format.", "", None, None, ""
 
-            progress(0, desc="🔗 Processing YouTube URL...")
+            progress(0, desc="Processing YouTube URL...")
 
             temp_file_path, download_msg = download_youtube_video(
                 youtube_url.strip(),
@@ -1223,33 +1223,33 @@ def process_youtube_or_upload_robust(video_file, youtube_url, num_search_results
                 return download_msg, "", None, None, ""
 
             video_path = temp_file_path
-            progress(0.3, desc="✅ YouTube content ready for processing!")
+            progress(0.3, desc="YouTube content ready for processing!")
 
         elif video_file:
             video_path = video_file
-            progress(0.3, desc="✅ Uploaded video ready for processing!")
+            progress(0.3, desc="Uploaded video ready for processing!")
         else:
-            return "❌ Please either upload a video file or provide a YouTube URL.", "", None, None, ""
+            return "Please either upload a video file or provide a YouTube URL.", "", None, None, ""
 
-        progress(0.35, desc="🎬 Starting transcription...")
+        progress(0.35, desc="Starting transcription...")
         transcript = transcribe_audio_from_video(video_path, progress=lambda p, desc: progress(0.35 + p * 0.25, desc))
         if transcript.startswith("❌"):
             return transcript, "", None, None, ""
-        progress(0.6, desc="✅ Transcription complete!")
+        progress(0.6, desc="Transcription complete!")
 
-        progress(0.65, desc="📝 Creating structured notes...")
+        progress(0.65, desc="Creating structured notes...")
         structured_notes = generate_structured_notes(transcript)
-        progress(0.75, desc="✅ Structured notes created!")
+        progress(0.75, desc="Structured notes created!")
 
-        progress(0.8, desc="🔍 Analyzing content for search...")
+        progress(0.8, desc="Analyzing content for search...")
         search_query = create_search_query(transcript)
         keywords = extract_keywords_and_concepts(transcript[:500])
 
-        progress(0.85, desc="🌐 Performing web search...")
+        progress(0.85, desc="Performing web search...")
         search_results = search_web_enhanced(search_query, num_search_results, include_videos=True)
-        progress(0.9, desc="✅ Search complete!")
+        progress(0.9, desc="Search complete!")
 
-        progress(0.95, desc="🖼️ Searching for relevant images...")
+        progress(0.95, desc="Searching for relevant images...")
         image_query = " ".join(keywords[:4]) if len(keywords) >= 4 else search_query
         image_urls = search_google_images(image_query, num_images)
 
@@ -1261,12 +1261,12 @@ def process_youtube_or_upload_robust(video_file, youtube_url, num_search_results
         image1 = images[0] if len(images) > 0 else None
         image2 = images[1] if len(images) > 1 else None
 
-        progress(1.0, desc="✅ Processing complete!")
+        progress(1.0, desc="Processing complete!")
 
         return transcript, structured_notes, image1, image2, search_results
 
     except Exception as e:
-        error_msg = f"❌ Pipeline error: {str(e)}"
+        error_msg = f"Pipeline error: {str(e)}"
         return error_msg, "", None, None, ""
 
     finally:
